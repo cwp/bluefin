@@ -1,1 +1,1 @@
-SET search_path to $schema
+set search_path to eg;

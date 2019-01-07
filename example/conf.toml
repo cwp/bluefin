@@ -1,22 +1,20 @@
 # example configuration file
 
-passwords = "secret/passwords.toml"
-# store passwords in a separate file, so they can be easily encrypted
-
-[clusters.dev.dsn]
+[eg]
 host = "localhost"
-port = 5432
+sysDB = "citus"
+database = "bluefin_example"
+migrations = "migrations"
+middleware = ["transactions"]
 
-[databases.bfe]
-cluster = "dev"
-name = "bluefin_example"
+[eg.roles]
+color = "settings/create.sql"
+pbp = "settings/create.sql"
 
-  [databases.bfe.schema.baseball]
-  migrations = "migrations"
+[eg.grants]
+color = "settings/read.sql"
+pbp = ["settings/read.sql", "settings/write.sql"]
 
-    [databases.bfe.schema.baseball.grants]
-    color = "settings/read.sql"
-    pbp = ["settings/read.sql", "settings/write.sql"]
-
-[users.pbp]
-name = "play_by_play"
+[eg.env]
+foo = "bar"
+nurp = "plonk"

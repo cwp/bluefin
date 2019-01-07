@@ -1,84 +1,79 @@
-
-import Configuration from '../lib/configuration'
-import Client from '../lib/client'
-import Migration from '../lib/migration'
+import Database from '../lib/database'
+import {Migration} from '../lib/program'
+import Path from '../lib/path';
 import vfs from './fixtures/simple.js'
 
+const p = basename => new Path(vfs, '/migrations', basename)
+
 describe('migration', () => {
-  describe('creation', function () {
-    it('parses filenames', function () {
-      const m = new Migration('ignore', '/migration/1-test.sql')
+  describe('creation', () => {
+    it('parses filenames', () => {
+      const m = new Migration('ignore', p('1-test.sql'))
       m.ordinal.must.equal(1)
       m.name.must.equal('test')
     })
 
-    it('handles leading zeros', function () {
-      const m = new Migration('ignore', '/migration/001-test.sql')
+    it('handles leading zeros', () => {
+      const m = new Migration('ignore', p('001-test.sql'))
       m.ordinal.must.equal(1)
       m.name.must.equal('test')
     })
 
-    it('handles multi-dash-name', function () {
-      const m = new Migration('ignore', '/migration/001-multi-dash-name.sql')
+    it('handles multi-dash-name', () => {
+      const m = new Migration('ignore', p('001-multi-dash-name.sql'))
       m.ordinal.must.equal(1)
       m.name.must.equal('multi-dash-name')
     })
 
-    it('handles camelCaseName', function () {
-      const m = new Migration('ignore', '/migration/001-camelCaseName.sql')
+    it('handles camelCaseName', () => {
+      const m = new Migration('ignore', p('001-camelCaseName.sql'))
       m.ordinal.must.equal(1)
       m.name.must.equal('camelCaseName')
     })
 
-    it('handles underscore_name', function () {
-      const m = new Migration('ignore', '/migration/001-underscore_name.sql')
+    it('handles underscore_name', () => {
+      const m = new Migration('ignore', p('001-underscore_name.sql'))
       m.ordinal.must.equal(1)
       m.name.must.equal('underscore_name')
     })
 
-    it('throws on no ordinal', function () {
-      const create = () => new Migration('ignore', '/migration/gong.sql')
+    it('throws on no ordinal', () => {
+      const create = () => new Migration('ignore', p('gong.sql'))
       create.must.throw(Error, "Malformed filename 'gong.sql'")
     })
 
-    it('throws on no SQL extension', function () {
-      const create = () => new Migration('ignore', '/migration/001-gong')
+    it('throws on no SQL extension', () => {
+      const create = () => new Migration('ignore', p('001-gong'))
       create.must.throw(Error, "Malformed filename '001-gong'")
     })
   })
 
-  describe('execution', function () {
-    let client
-    let db
-
+  describe('customize', () => {
+    let migration
     before(() => {
-      return Configuration.read('/test/conf.json', vfs)
-        .then(conf => {
-          db = conf.database('bft')
-          return db.ensure()
-        })
-        .then(() => db.connect())
-        .then(c => c.exec('TRUNCATE TABLE bluefin.migrations'))
+      const path = new Path(null, '/', '03-nothing.sql')
+      migration = new Migration('', path)
     })
 
-    after(() => {
-      if (client) client.disconnect()
+    it('skips if less than maxMigrationOrdinal', async function() {
+      const db = Database.stub()
+      db._maxMigrationOrdinal = 5
+      await migration.customize({}, db)
+      migration.skip.must.be.true()
     })
 
-    it('inserts a migration record', function () {
-      const m = new Migration('SELECT 1', '3-some-migration.sql')
-      const context = { schema: 'migration_test' }
-      return db.connect()
-        .then(c => {
-          return m.exec(c, context)
-            .then(() => c.table('SELECT * FROM bluefin.migrations'))
-        })
-        .then(rows => {
-          rows.length.must.equal(1)
-          rows[0].schema.must.equal('migration_test')
-          rows[0].ordinal.must.equal(3)
-          rows[0].name.must.equal('some-migration')
-        })
+    it('skips if equal to maxMigrationOrdinal', async function() {
+      const db = Database.stub()
+      db._maxMigrationOrdinal = 3
+      await migration.customize({}, db)
+      migration.skip.must.be.true()
+    })
+
+    it('runs if greater than maxMigrationOrdinal', async function() {
+      const db = Database.stub()
+      db._maxMigrationOrdinal = 1
+      await migration.customize({}, db)
+      migration.skip.must.be.false()
     })
   })
 })

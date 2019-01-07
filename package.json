@@ -5,30 +5,23 @@
   "main": "index.js",
   "bin": "./bin/cli.js",
   "scripts": {
-    "test": "NODE_ENV=test mocha -R list -r must -r reify"
+    "test": "NODE_ENV=test mocha -r esm"
   },
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "memfs": "~0.0.9",
-    "mocha": "~3.2.0",
-    "must": "~0.13.4",
-    "standard": "~9.0.2"
+    "memfs": "^2.15.5",
+    "mocha": "^6.2.0",
+    "must": "~0.13.4"
   },
   "dependencies": {
-    "bluebird": "~3.5.0",
-    "commander": "~2.9.0",
-    "pg": "~6.1.5",
-    "reify": "~0.6.6"
-  },
-  "standard": {
-    "globals": [
-      "after",
-      "afterEach",
-      "before",
-      "beforeEach",
-      "describe",
-      "it"
-    ]
+    "@iarna/toml": "^2.2.3",
+    "commander": "^3.0.1",
+    "debug": "^4.1.1",
+    "deepmerge": "^4.0.0",
+    "esm": "^3.2.25",
+    "memorystream": "^0.3.1",
+    "mustache": "^3.0.3",
+    "pg": "^7.12.1"
   }
 }

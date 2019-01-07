@@ -1,66 +1,34 @@
 #!/usr/bin/env node
 
-require('reify')
-const fs = require('fs')
+require = require('esm')(module)
 const program = require('commander')
-const Configuration = require('../lib/configuration').default
+const {migrate} = require('../lib/commands')
 
-function readConf (fpath) {
-  fpath = fpath || process.env.BLUEFIN_CONF || 'conf.json'
-  return Configuration.read(fpath, fs)
-}
-
-function readOptions (cmd) {
-  const options = {log: true}
-  if (cmd.parent.migration) options.last = cmd.parent.migration
-  if (cmd.parent.list) options.list = cmd.parent.list
-  return options
-}
-
-function rebuild (dbName, schemaName, cmd) {
-  const options = readOptions(cmd)
-  readConf(cmd.parent.conf)
-    .then(conf => conf.database(dbName))
-    .then(db => {
-      const vow = schemaName
-        ? db.rebuildSchema(schemaName, options)
-        : db.rebuild(options)
-      return vow.finally(() => db.disconnect())
-    })
-    .catch(err => console.log(err.messsage || err.stack.split('\n')[0]))
-}
-
-function apply (dbName, schemaName, cmd) {
-  const options = readOptions(cmd)
-  readConf(cmd.parent.conf)
-    .then(conf => conf.database(dbName))
-    .then(db => {
-      const vow = schemaName
-        ? db.applySchema(schemaName, options)
-        : db.apply(options)
-      return vow.finally(() => db.disconnect())
-    })
-    .catch(err => console.log(err.messsage))
-}
+program.version('0.0.2').option('-c --conf <path>', 'Use this configuration file')
 
 program
-  .version('0.0.1')
-  .option('-c --conf <path>', 'Path to configuration file')
-  .option(
-    '-m --migration <ordinal>',
-    'Only consider migrations with this ordinal or lower',
-    parseInt
-  )
-  .option('-l --list', 'List migrations only, do not apply them')
+  .command('migrate <db>')
+  .description('Apply migrations to a database')
+  .option('-g --no-grants', 'Do not apply grants')
+  .option('-m --no-migrations', 'Do not apply migrations')
+  .option('-n --noop', 'Do not modify the database')
+  .option('-a --abstract', 'Do not connect to the database at all (implies --noop)')
+  .option('-r --rebuild', 'First destroy the existing database')
+  .option('-f --first <ordinal>', 'Skip all migrations before this number', parseInt)
+  .option('-l --last <ordinal>', 'Skip all migrations after this number', parseInt)
+  .option('-q --quiet', 'Do not write a description to stdout')
+  .option('--sql', 'Write the migrations as SQL to stdout')
+  .option('--json', 'Describe the migrations in JSON format on stdout')
+  .action((dbName, cmd) => {
+    const options = {}
+    for (let opt of ['first', 'last']) options[opt] = cmd[opt]
+    for (let opt of ['grants', 'migrations', 'rebuild', 'noop', 'abstract', 'quiet', 'sql', 'json'])
+      options[opt] = !!cmd[opt]
+    if (options.abstract) options.noop = true
 
-program
-  .command('rebuild <db> [schema]')
-  .description('Destroy and recreate an entire database or just one schema')
-  .action(rebuild)
+    fpath = cmd.parent.conf || process.env.BLUEFIN_CONF || 'conf.toml'
 
-program
-  .command('apply <db> [schema]')
-  .description('Apply new migrations to a schema or all schemata in a database')
-  .action(apply)
+    return migrate(dbName, fpath, options)
+  })
 
 program.parse(process.argv)
