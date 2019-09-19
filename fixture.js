@@ -12,15 +12,15 @@ export async function create(endpoint, confFilePath, nickname, fs) {
   ])
 
   Object.assign(conf.raw, endpoint)
-  await createDatabase(conf, dbName)
+  const sysdb = await createDatabase(conf, dbName)
   conf.raw.database = dbName
 
   try {
     await build(conf)
-    return fixture(conf, endpoint.database)
+    return fixture(conf, sysdb)
   } catch (e) {
     try {
-      await destroyDatabase(conf, endpoint.database)
+      await destroyDatabase(conf, sysdb)
     } catch (destroyError) {
       console.log(destroyError)
     } finally {
@@ -39,9 +39,11 @@ const createDatabase = async (conf, dbName) => {
   try {
     var sysClient = await conf.connect()
     await sysClient.exec(`create database ${dbName}`)
+    var sysdb = await sysClient.value('select current_database()')
   } finally {
     if (sysClient) await sysClient.disconnect()
   }
+  return sysdb
 }
 
 const build = async conf => {
