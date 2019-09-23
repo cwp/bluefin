@@ -1,6 +1,6 @@
 {
   "name": "bluefin",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "A postgres schema management tool",
   "main": "index.js",
   "bin": "./bin/cli.js",
