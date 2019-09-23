@@ -1,10 +1,11 @@
 import Configuration from './lib/configuration'
 import Database from './lib/database'
-import Plan from './lib/plan'
+import {migrate} from './lib/commands'
 import {promisify} from 'util'
 import {randomBytes} from 'crypto'
 
 const randbytes = promisify(randomBytes)
+
 export async function create(endpoint, confFilePath, nickname, fs) {
   const [conf, dbName] = await Promise.all([
     await Configuration.db(nickname, confFilePath, fs),
@@ -27,6 +28,14 @@ export async function create(endpoint, confFilePath, nickname, fs) {
       throw e
     }
   }
+}
+
+export async function rebuild(confFilePath, nickname, fs) {
+  const options = {rebuild: true, quiet: true, grants: true}
+  const conf = await migrate(nickname, confFilePath, options)
+  const dsn = conf.dsn()
+  delete dsn.application_name
+  return dsn
 }
 
 const genName = async base => {
