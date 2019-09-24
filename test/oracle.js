@@ -75,10 +75,6 @@ describe('database', () => {
     types.must.eql(['public.test_type'])
   })
 
-  it('gets large objects', async () => {
-    const los = await database.largeObjects()
-    los.must.eql([123])
-  })
 })
 
 const prepareDatabaseSql = roleName => `

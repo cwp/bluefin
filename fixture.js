@@ -30,8 +30,12 @@ export async function create(endpoint, confFilePath, nickname, fs) {
   }
 }
 
-export async function rebuild(confFilePath, nickname, fs) {
-  const options = {rebuild: true, quiet: true, grants: true}
+export async function rebuild(confFilePath, nickname, _options = {}, fs) {
+  const options = Object.assign(
+    {},
+    {rebuild: true, quiet: true, migrations: true, grants: true},
+    _options,
+  )
   const conf = await migrate(nickname, confFilePath, options)
   const dsn = conf.dsn()
   delete dsn.application_name

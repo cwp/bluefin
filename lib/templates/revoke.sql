@@ -16,9 +16,6 @@ revoke all on foreign data wrapper {{foreignDataWrapperNames}} from {{roleNames}
 {{#has.foreignServers}}
 revoke all on foreign server {{foreignServerNames}} from {{roleNames}};
 {{/has.foreignServers}}
-{{#has.tablespaces}}
-revoke all on tablespace {{tablespaceNames}} from {{roleNames}};
-{{/has.tablespaces}}
 {{#has.types}}
 revoke all on type {{typeNames}} from {{roleNames}};
 {{/has.types}}
