@@ -10,18 +10,18 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "memfs": "^2.15.5",
-    "mocha": "^6.2.0",
+    "memfs": "~3.1.2",
+    "mocha": "~7.1.2",
     "must": "~0.13.4"
   },
   "dependencies": {
-    "@iarna/toml": "^2.2.3",
-    "commander": "^3.0.1",
+    "@iarna/toml": "~2.2.5",
+    "commander": "~5.1.0",
     "debug": "^4.1.1",
-    "deepmerge": "^4.0.0",
+    "deepmerge": "~4.2.2",
     "esm": "^3.2.25",
     "memorystream": "^0.3.1",
-    "mustache": "^3.0.3",
-    "pg": "^7.12.1"
+    "mustache": "~4.0.1",
+    "pg": "~8.0.3"
   }
 }
