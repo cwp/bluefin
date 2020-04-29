@@ -2,7 +2,7 @@
 
 require = require('esm')(module)
 const program = require('commander')
-const {migrate} = require('../lib/commands')
+const {run, migrate} = require('../lib/commands')
 
 program.version('0.0.2').option('-c --conf <path>', 'Use this configuration file')
 
@@ -28,7 +28,7 @@ program
 
     fpath = cmd.parent.conf || process.env.BLUEFIN_CONF || 'conf.toml'
 
-    return migrate(dbName, fpath, options)
+    return run(migrate, dbName, fpath, options)
   })
 
 program.parse(process.argv)
