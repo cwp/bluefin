@@ -1,7 +1,6 @@
-import {Grant, Migration, Program, Role, Table} from '../lib/program'
-
 import Configuration from '../lib/configuration'
 import Plan from '../lib/plan'
+import {Grant, Migration, Program, Role, Table} from '../lib/program'
 import full from './fixtures/full'
 import inheritance from './fixtures/inheritance'
 import minimal from './fixtures/minimal'
@@ -121,9 +120,19 @@ desc('full', 'prod', ctx => {
     for (let i = 1; i < phase.length; i++) phase[i].ordinal.must.be.below(3)
   })
 
+  it('honors options.migrations when present', async function() {
+    const phase = await ctx.prod.migrationPhase({migrations: false})
+    phase.must.be.an(Array)
+    phase.must.be.empty()
+  })
+
   it('creates a default environment', async function() {
     const env = ctx.prod.createEnvironment()
     env.must.be.an(Object)
+    env.must.have.property('database')
+    env.database.must.equal('appdata')
+    env.has.roles.must.be.true()
+    env.roleNames.must.eql(['app1'])
   })
 })
 
